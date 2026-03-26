@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ViBlio · VillaMedic</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --vm-orange:#F26522;
+  --vm-red:#E8352E;
+  --vm-gradient:linear-gradient(135deg,#E8352E 0%,#F26522 50%,#F7941D 100%);
+  --vm-gradient-soft:linear-gradient(135deg,#FFF5F0 0%,#FFF0E8 100%);
+  --vm-dark:#1a1a2e;
+  --vm-gray:#f5f5f7;
+  --vm-text:#333;
+  --vm-light-text:#888;
+  --radius:12px;
+  --shadow:0 4px 24px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 40px rgba(0,0,0,0.12);
+}
+html,body{height:100%;font-family:'Poppins',sans-serif;background:var(--vm-gray);color:var(--vm-text);overflow-x:hidden}
+
+/* ══════ LOADING SCREEN ══════ */
+#splashScreen{position:fixed;inset:0;z-index:9999;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity 0.6s ease}
+#splashScreen.hide{opacity:0;pointer-events:none}
+#splashScreen img{width:120px;animation:splashPulse 1.5s ease-in-out infinite}
+#splashScreen .splash-text{margin-top:16px;font-size:22px;font-weight:700;background:var(--vm-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:2px}
+#splashScreen .splash-sub{font-size:11px;color:var(--vm-light-text);margin-top:4px;letter-spacing:4px;text-transform:uppercase}
+#splashScreen .splash-bar{width:200px;height:3px;background:#eee;border-radius:3px;margin-top:24px;overflow:hidden}
+#splashScreen .splash-bar-fill{width:0%;height:100%;background:var(--vm-gradient);border-radius:3px;animation:splashLoad 1.8s ease forwards}
+@keyframes splashPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes splashLoad{0%{width:0}60%{width:70%}100%{width:100%}}
+
+/* ══════ LOGIN SCREEN ══════ */
+#loginScreen{display:none;min-height:100vh;background:var(--vm-gray)}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#fff;border-radius:16px;box-shadow:var(--shadow-lg);width:100%;max-width:420px;padding:48px 40px 40px;text-align:center;position:relative;overflow:hidden}
+.login-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--vm-gradient)}
+.login-logo{width:80px;margin:0 auto 8px}
+.login-brand{font-size:28px;font-weight:800;background:var(--vm-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.login-sub{font-size:11px;color:var(--vm-light-text);letter-spacing:5px;text-transform:uppercase;margin-bottom:32px;font-weight:600}
+.login-title{font-size:18px;font-weight:600;color:var(--vm-text);margin-bottom:24px}
+.login-field{position:relative;margin-bottom:16px;text-align:left}
+.login-field label{display:block;font-size:12px;font-weight:500;color:var(--vm-light-text);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px}
+.login-field input{width:100%;padding:14px 16px 14px 44px;border:1.5px solid #e0e0e0;border-radius:10px;font-size:15px;font-family:'Poppins',sans-serif;transition:all 0.3s;outline:none;background:#fafafa}
+.login-field input:focus{border-color:var(--vm-orange);background:#fff;box-shadow:0 0 0 3px rgba(242,101,34,0.1)}
+.login-field .field-icon{position:absolute;left:14px;bottom:14px;width:18px;height:18px;fill:var(--vm-light-text)}
+.login-field input:focus ~ .field-icon,.login-field input:focus + .field-icon{fill:var(--vm-orange)}
+.login-field .field-icon-abs{position:absolute;left:14px;top:34px;width:18px;height:18px;fill:var(--vm-light-text);pointer-events:none}
+.toggle-pass{position:absolute;right:14px;top:34px;cursor:pointer;width:20px;height:20px;fill:var(--vm-light-text);transition:fill 0.2s}
+.toggle-pass:hover{fill:var(--vm-orange)}
+.login-error{background:#FFF0F0;color:#E8352E;padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:16px;display:none;text-align:left;border:1px solid #FFDDDD}
+.login-error.show{display:block;animation:shake 0.4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.login-btn{width:100%;padding:14px;border:none;border-radius:10px;background:var(--vm-gradient);color:#fff;font-size:16px;font-weight:600;font-family:'Poppins',sans-serif;cursor:pointer;letter-spacing:1px;transition:all 0.3s;box-shadow:0 4px 16px rgba(242,101,34,0.3);margin-top:8px}
+.login-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(242,101,34,0.4)}
+.login-btn:active{transform:translateY(0)}
+.login-btn:disabled{opacity:0.7;cursor:not-allowed;transform:none}
+.login-forgot{display:block;margin-top:16px;font-size:13px;color:var(--vm-orange);text-decoration:none;font-weight:500;transition:color 0.2s}
+.login-forgot:hover{color:var(--vm-red)}
+.login-footer{margin-top:24px;font-size:11px;color:#bbb;line-height:1.6}
+
+/* ══════ DASHBOARD ══════ */
+#dashScreen{display:none;min-height:100vh;background:var(--vm-gray)}
+.dash-nav{background:#fff;box-shadow:0 1px 8px rgba(0,0,0,0.06);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100}
+.dash-nav-left{display:flex;align-items:center;gap:10px}
+.dash-nav-left img{height:36px}
+.dash-nav-brand{font-size:20px;font-weight:800;background:var(--vm-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+.dash-nav-sub{font-size:9px;color:var(--vm-light-text);letter-spacing:3px;text-transform:uppercase;margin-top:-4px;font-weight:600}
+.dash-nav-right{display:flex;align-items:center;gap:16px}
+.dash-user{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500;color:var(--vm-text)}
+.dash-avatar{width:36px;height:36px;border-radius:50%;background:var(--vm-gradient);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:14px}
+.dash-logout{padding:8px 16px;border:1.5px solid #e0e0e0;border-radius:8px;background:#fff;font-size:12px;font-weight:500;font-family:'Poppins',sans-serif;cursor:pointer;color:var(--vm-text);transition:all 0.2s}
+.dash-logout:hover{border-color:var(--vm-red);color:var(--vm-red);background:#FFF5F5}
+
+/* Hero banner */
+.dash-hero{background:var(--vm-gradient);padding:48px 32px;text-align:center;color:#fff;position:relative;overflow:hidden}
+.dash-hero::before{content:'';position:absolute;top:-50%;right:-20%;width:400px;height:400px;background:rgba(255,255,255,0.06);border-radius:50%}
+.dash-hero::after{content:'';position:absolute;bottom:-30%;left:-10%;width:300px;height:300px;background:rgba(255,255,255,0.04);border-radius:50%}
+.dash-hero h1{font-size:28px;font-weight:700;margin-bottom:4px;position:relative;z-index:1}
+.dash-hero p{font-size:14px;opacity:0.85;font-weight:300;position:relative;z-index:1}
+
+/* Biblioteca grid */
+.dash-content{max-width:1100px;margin:0 auto;padding:32px 24px 60px}
+.dash-section-title{font-size:14px;font-weight:600;color:var(--vm-light-text);text-transform:uppercase;letter-spacing:3px;margin-bottom:20px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+
+/* Course card */
+.course-card{background:#fff;border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;transition:all 0.3s;position:relative}
+.course-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.course-card.locked{opacity:0.5;cursor:not-allowed}
+.course-card.locked:hover{transform:none;box-shadow:var(--shadow)}
+.cc-banner{height:180px;background:var(--vm-gradient);position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.cc-banner.wachitos-bg{background:linear-gradient(135deg,#0a0c12 0%,#1a1a2e 50%,#2d1f4e 100%)}
+.cc-banner img.cc-cover{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.cc-banner .cc-icon{font-size:52px;position:relative;z-index:2;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))}
+.cc-banner .cc-badge{position:absolute;top:12px;right:12px;background:rgba(255,255,255,0.2);backdrop-filter:blur(8px);color:#fff;font-size:10px;font-weight:600;padding:4px 10px;border-radius:20px;letter-spacing:1px;text-transform:uppercase;z-index:3}
+.cc-banner .cc-badge.new{background:rgba(232,53,46,0.9)}
+.cc-banner .cc-lock{position:absolute;inset:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:4}
+.cc-banner .cc-lock svg{width:40px;height:40px;fill:#fff;opacity:0.7}
+.cc-body{padding:16px 20px 20px}
+.cc-title{font-size:16px;font-weight:700;color:var(--vm-text);margin-bottom:4px}
+.cc-desc{font-size:13px;color:var(--vm-light-text);line-height:1.5}
+.cc-meta{display:flex;align-items:center;gap:12px;margin-top:12px;font-size:11px;color:var(--vm-light-text)}
+.cc-meta span{display:flex;align-items:center;gap:4px}
+.cc-meta svg{width:14px;height:14px;fill:var(--vm-light-text)}
+
+/* coming soon overlay */
+.coming-soon{position:absolute;inset:0;background:rgba(255,255,255,0.6);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:5;border-radius:var(--radius);gap:6px}
+.coming-soon svg{width:28px;height:28px;fill:var(--vm-orange);opacity:0.5}
+.coming-soon span{background:var(--vm-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:13px;font-weight:700;letter-spacing:3px;text-transform:uppercase}
+
+/* Toast */
+.vb-toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--vm-dark);color:#fff;padding:12px 24px;border-radius:10px;font-size:13px;font-weight:500;z-index:9999;transition:transform 0.4s cubic-bezier(0.4,0,0.2,1);box-shadow:0 4px 24px rgba(0,0,0,0.3)}
+.vb-toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ══════ RESPONSIVE ══════ */
+@media(max-width:480px){
+  .login-card{padding:36px 24px 28px;margin:0 12px}
+  .login-brand{font-size:24px}
+  .login-sub{letter-spacing:3px;font-size:10px}
+  .dash-hero h1{font-size:22px}
+  .dash-hero{padding:32px 20px}
+  .dash-grid{grid-template-columns:1fr}
+  .dash-nav{padding:0 12px}
+  .dash-user span{display:none}
+  .dash-content{padding:20px 12px 40px}
+}
+@media(min-width:481px) and (max-width:768px){
+  .login-card{max-width:380px}
+  .dash-grid{grid-template-columns:1fr}
+}
+@media(min-width:769px) and (max-width:1024px){
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(min-width:1441px){
+  .dash-grid{grid-template-columns:repeat(4,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════ SPLASH SCREEN ══════ -->
+<div id="splashScreen">
+  <img src="villamedic_logo.png" alt="VillaMedic" onerror="this.style.display='none'">
+  <div class="splash-text">ViBlio</div>
+  <div class="splash-sub">Biblioteca Digital</div>
+  <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+</div>
+
+<!-- ══════ LOGIN SCREEN ══════ -->
+<div id="loginScreen">
+  <div class="login-wrap">
+    <div class="login-card">
+      <img src="villamedic_logo.png" alt="VillaMedic" class="login-logo" onerror="this.style.display='none'">
+      <div class="login-brand">ViBlio</div>
+      <div class="login-sub">Biblioteca Digital</div>
+      <div class="login-title">Iniciar sesión</div>
+      <div class="login-error" id="loginError">Usuario o contraseña incorrectos</div>
+      <form id="loginForm" onsubmit="return handleLogin(event)">
+        <div class="login-field">
+          <label>Usuario</label>
+          <input type="text" id="loginUser" placeholder="correo@ejemplo.com" autocomplete="username" required>
+          <svg class="field-icon-abs" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+        </div>
+        <div class="login-field">
+          <label>Contraseña</label>
+          <input type="password" id="loginPass" placeholder="••••••••" autocomplete="current-password" required>
+          <svg class="field-icon-abs" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg>
+          <svg class="toggle-pass" onclick="togglePassword()" viewBox="0 0 24 24" id="eyeIcon"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+        </div>
+        <button type="submit" class="login-btn" id="loginBtn">ENTRAR</button>
+      </form>
+      <a href="#" class="login-forgot" onclick="showToast('Contacta a tu coordinador para recuperar tu acceso');return false">¿Olvidó su contraseña?</a>
+      <div class="login-footer">
+        VillaMedic &middot; ViBlio &middot; Biblioteca Digital<br>
+        Tu éxito es nuestro compromiso
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ DASHBOARD SCREEN ══════ -->
+<div id="dashScreen">
+  <!-- Navbar -->
+  <nav class="dash-nav">
+    <div class="dash-nav-left">
+      <img src="villamedic_logo.png" alt="VillaMedic" style="height:32px" onerror="this.style.display='none'">
+      <div>
+        <div class="dash-nav-brand">ViBlio</div>
+        <div class="dash-nav-sub">Biblioteca Digital</div>
+      </div>
+    </div>
+    <div class="dash-nav-right">
+      <div class="dash-user">
+        <div class="dash-avatar" id="dashAvatar">A</div>
+        <span id="dashUserName">Alumno</span>
+      </div>
+      <button class="dash-logout" onclick="doLogout()">Cerrar sesión</button>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="dash-hero">
+    <h1>Bienvenido a ViBlio</h1>
+    <p>Tu biblioteca digital de recursos Villamedic</p>
+  </div>
+
+  <!-- Content -->
+  <div class="dash-content">
+    <div class="dash-section-title">Mis Recursos</div>
+    <div class="dash-grid">
+
+      <!-- ═══ WACHITOS ENAM 2026 — ACTIVE ═══ -->
+      <div class="course-card" onclick="openWachitos()">
+        <div class="cc-banner wachitos-bg" style="position:relative">
+          <!-- Mini wachito preview mosaic -->
+          <svg viewBox="0 0 400 160" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.15">
+            <rect x="10" y="10" width="85" height="55" rx="4" fill="#E8352E"/><rect x="10" y="12" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="105" y="10" width="85" height="55" rx="4" fill="#1E88E5"/><rect x="105" y="12" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="200" y="10" width="85" height="55" rx="4" fill="#43A047"/><rect x="200" y="12" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="295" y="10" width="85" height="55" rx="4" fill="#FF6D00"/><rect x="295" y="12" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="10" y="75" width="85" height="55" rx="4" fill="#E91E8C"/><rect x="10" y="77" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="105" y="75" width="85" height="55" rx="4" fill="#00BCD4"/><rect x="105" y="77" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="200" y="75" width="85" height="55" rx="4" fill="#7B1FA2"/><rect x="200" y="77" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <rect x="295" y="75" width="85" height="55" rx="4" fill="#C62828"/><rect x="295" y="77" width="85" height="8" rx="2" fill="#fff" opacity="0.3"/>
+            <text x="52" y="42" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">GinObs</text>
+            <text x="147" y="42" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">Clínicas</text>
+            <text x="242" y="42" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">SP</text>
+            <text x="337" y="42" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">Qx</text>
+            <text x="52" y="107" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">Gineco</text>
+            <text x="147" y="107" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">NeoPed</text>
+            <text x="242" y="107" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">Repaso</text>
+            <text x="337" y="107" text-anchor="middle" fill="#fff" font-size="7" font-weight="bold" opacity="0.5">Final</text>
+          </svg>
+          <div class="cc-icon" style="font-size:42px;z-index:2;position:relative">
+            <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><rect x="4" y="8" width="36" height="44" rx="4" fill="#fff" opacity="0.9"/><rect x="8" y="14" width="28" height="3" rx="1.5" fill="#E8352E"/><rect x="8" y="20" width="20" height="2" rx="1" fill="#ccc"/><rect x="8" y="25" width="24" height="2" rx="1" fill="#ccc"/><rect x="8" y="30" width="18" height="2" rx="1" fill="#ccc"/><rect x="8" y="36" width="28" height="3" rx="1.5" fill="#1E88E5"/><rect x="8" y="42" width="22" height="2" rx="1" fill="#ccc"/><rect x="16" y="8" width="36" height="44" rx="4" fill="#fff" opacity="0.7" stroke="#E8352E" stroke-width="1"/><rect x="20" y="14" width="28" height="3" rx="1.5" fill="#F26522"/><rect x="20" y="20" width="20" height="2" rx="1" fill="#ddd"/><rect x="20" y="25" width="24" height="2" rx="1" fill="#ddd"/><circle cx="44" cy="44" r="10" fill="#E8352E"/><text x="44" y="48" text-anchor="middle" fill="#fff" font-size="12" font-weight="bold">133</text></svg>
+          </div>
+          <div class="cc-badge new">Nuevo</div>
+        </div>
+        <div class="cc-body">
+          <div class="cc-title">WACHITOS ENAM 2026</div>
+          <div class="cc-desc">Hoja de Ruta ENAM Extraordinario 2026 — 133 wachitos, cronograma de 20 días, tendencias reales y más.</div>
+          <div class="cc-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>133 Wachitos</span>
+            <span><svg viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>20 Días</span>
+            <span><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>Acceso activo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ WACHITOS RM 2026 — COMING SOON ═══ -->
+      <div class="course-card locked">
+        <div class="cc-banner" style="background:linear-gradient(135deg,#0D47A1,#1565C0,#1E88E5);position:relative">
+          <!-- RM wachitos mini preview -->
+          <svg viewBox="0 0 400 160" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.12">
+            <rect x="20" y="20" width="160" height="120" rx="6" fill="#fff"/><rect x="28" y="28" width="144" height="10" rx="3" fill="#0D47A1"/>
+            <rect x="28" y="44" width="60" height="6" rx="2" fill="#90CAF9"/><rect x="28" y="54" width="100" height="6" rx="2" fill="#90CAF9"/>
+            <rect x="28" y="64" width="80" height="6" rx="2" fill="#90CAF9"/><rect x="28" y="78" width="144" height="10" rx="3" fill="#1565C0"/>
+            <rect x="28" y="94" width="120" height="6" rx="2" fill="#90CAF9"/><rect x="28" y="104" width="90" height="6" rx="2" fill="#90CAF9"/>
+            <rect x="220" y="20" width="160" height="120" rx="6" fill="#fff"/><rect x="228" y="28" width="144" height="10" rx="3" fill="#E8352E"/>
+            <rect x="228" y="44" width="80" height="6" rx="2" fill="#FFCDD2"/><rect x="228" y="54" width="110" height="6" rx="2" fill="#FFCDD2"/>
+            <rect x="228" y="68" width="144" height="10" rx="3" fill="#43A047"/><rect x="228" y="84" width="100" height="6" rx="2" fill="#C8E6C9"/>
+          </svg>
+          <div class="cc-icon" style="z-index:2;position:relative">
+            <svg width="60" height="56" viewBox="0 0 60 56" fill="none"><rect x="6" y="6" width="48" height="44" rx="6" fill="#fff" opacity="0.9"/><rect x="12" y="12" width="36" height="5" rx="2" fill="#0D47A1"/><text x="30" y="31" text-anchor="middle" fill="#0D47A1" font-size="10" font-weight="bold">RESIDENTADO</text><text x="30" y="42" text-anchor="middle" fill="#E8352E" font-size="8" font-weight="bold">MÉDICO 2026</text><rect x="10" y="46" width="40" height="2" rx="1" fill="#1E88E5" opacity="0.5"/></svg>
+          </div>
+          <div class="cc-badge">Próximamente</div>
+        </div>
+        <div class="cc-body">
+          <div class="cc-title" style="font-size:18px">WACHITOS RM 2026</div>
+          <div class="cc-desc" style="color:#aaa;font-style:italic">Algo grande se viene para el Residentado...</div>
+          <div class="cc-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Contenido oculto</span>
+          </div>
+        </div>
+        <div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg><span>Próximamente</span></div>
+      </div>
+
+      <!-- ═══ VILLAMEMOS PREMIUM — COMING SOON ═══ -->
+      <div class="course-card locked">
+        <div class="cc-banner" style="background:linear-gradient(135deg,#FF6F00,#FFA000,#FFD54F);position:relative">
+          <!-- Memes/fun visual -->
+          <svg viewBox="0 0 400 160" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18">
+            <circle cx="100" cy="65" r="40" fill="#fff"/><circle cx="85" cy="55" r="5" fill="#333"/><circle cx="115" cy="55" r="5" fill="#333"/><path d="M80 75 Q100 95 120 75" stroke="#333" stroke-width="4" fill="none" stroke-linecap="round"/>
+            <circle cx="260" cy="50" r="28" fill="#fff" opacity="0.6"/><text x="260" y="58" text-anchor="middle" font-size="30">🤯</text>
+            <circle cx="340" cy="110" r="22" fill="#fff" opacity="0.5"/><text x="340" y="118" text-anchor="middle" font-size="24">💀</text>
+            <circle cx="180" cy="120" r="18" fill="#fff" opacity="0.4"/><text x="180" y="127" text-anchor="middle" font-size="20">😭</text>
+            <rect x="50" y="120" width="60" height="16" rx="8" fill="#fff" opacity="0.3"/><text x="80" y="132" text-anchor="middle" fill="#FF6F00" font-size="7" font-weight="bold">JAJAJA</text>
+          </svg>
+          <div class="cc-icon" style="z-index:2;position:relative">
+            <svg width="64" height="60" viewBox="0 0 64 60" fill="none"><circle cx="32" cy="26" r="22" fill="#fff" opacity="0.95"/><circle cx="23" cy="21" r="3.5" fill="#333"/><circle cx="41" cy="21" r="3.5" fill="#333"/><path d="M20 33 Q32 46 44 33" stroke="#FF6F00" stroke-width="3.5" fill="none" stroke-linecap="round"/><rect x="6" y="50" width="52" height="8" rx="4" fill="#fff" opacity="0.95"/><text x="32" y="57" text-anchor="middle" fill="#FF6F00" font-size="7" font-weight="800" letter-spacing="1">VILLAMEMOS</text></svg>
+          </div>
+          <div class="cc-badge">Próximamente</div>
+        </div>
+        <div class="cc-body">
+          <div class="cc-title" style="font-size:18px">VillaMemos Premium</div>
+          <div class="cc-desc" style="color:#aaa;font-style:italic">Vas a reir... y vas a aprender. Prepárate.</div>
+          <div class="cc-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Contenido oculto</span>
+          </div>
+        </div>
+        <div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg><span>Próximamente</span></div>
+      </div>
+
+      <!-- ═══ KAHOOT RAMBO — COMING SOON ═══ -->
+      <div class="course-card locked">
+        <div class="cc-banner" style="background:linear-gradient(135deg,#6A1B9A,#8E24AA,#AB47BC);position:relative">
+          <!-- Kahoot-style visual -->
+          <svg viewBox="0 0 400 160" style="position:absolute;inset:0;width:100%;height:100%;opacity:0.18">
+            <rect x="40" y="45" width="150" height="50" rx="10" fill="#E53935"/><rect x="210" y="45" width="150" height="50" rx="10" fill="#1E88E5"/>
+            <rect x="40" y="105" width="150" height="50" rx="10" fill="#FDD835"/><rect x="210" y="105" width="150" height="50" rx="10" fill="#43A047"/>
+            <text x="115" y="76" text-anchor="middle" fill="#fff" font-size="15" font-weight="bold">?</text>
+            <text x="285" y="76" text-anchor="middle" fill="#fff" font-size="15" font-weight="bold">?</text>
+            <text x="115" y="136" text-anchor="middle" fill="#fff" font-size="15" font-weight="bold">?</text>
+            <text x="285" y="136" text-anchor="middle" fill="#fff" font-size="15" font-weight="bold">?</text>
+            <rect x="100" y="5" width="200" height="30" rx="6" fill="#fff" opacity="0.3"/><text x="200" y="25" text-anchor="middle" fill="#fff" font-size="10" font-weight="bold">¿Quién será el mejor?</text>
+            <circle cx="360" cy="20" r="16" fill="#FFD54F" opacity="0.6"/><text x="360" y="26" text-anchor="middle" fill="#6A1B9A" font-size="14" font-weight="bold">⏱</text>
+          </svg>
+          <div class="cc-icon" style="z-index:2;position:relative">
+            <svg width="64" height="60" viewBox="0 0 64 60" fill="none"><rect x="8" y="6" width="48" height="44" rx="10" fill="#fff" opacity="0.95"/><rect x="14" y="20" width="16" height="12" rx="4" fill="#E53935"/><rect x="34" y="20" width="16" height="12" rx="4" fill="#1E88E5"/><rect x="14" y="36" width="16" height="12" rx="4" fill="#FDD835"/><rect x="34" y="36" width="16" height="12" rx="4" fill="#43A047"/><text x="32" y="16" text-anchor="middle" fill="#6A1B9A" font-size="9" font-weight="900">KAHOOT</text><rect x="6" y="50" width="52" height="8" rx="4" fill="#FFD54F"/><text x="32" y="57" text-anchor="middle" fill="#6A1B9A" font-size="7" font-weight="800">RAMBO</text></svg>
+          </div>
+          <div class="cc-badge">Próximamente</div>
+        </div>
+        <div class="cc-body">
+          <div class="cc-title" style="font-size:18px">Kahoot Rambo</div>
+          <div class="cc-desc" style="color:#aaa;font-style:italic">Compite. Demuestra. Solo los mejores sobreviven.</div>
+          <div class="cc-meta">
+            <span><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2z"/></svg>Contenido oculto</span>
+          </div>
+        </div>
+        <div class="coming-soon"><svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1s3.1 1.39 3.1 3.1v2z"/></svg><span>Próximamente</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div style="text-align:center;padding:24px 20px;font-size:12px;color:#999;border-top:1px solid #eee;background:#fff;letter-spacing:1px">
+    <span style="font-weight:600;background:linear-gradient(135deg,#E8352E,#F26522);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Empire</span>
+    <span style="margin:0 6px;color:#ddd">&middot;</span>
+    <span style="font-weight:600;background:linear-gradient(135deg,#E8352E,#F26522);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Campus</span>
+    <span style="margin:0 6px;color:#ddd">&middot;</span>
+    <span style="font-weight:600;background:linear-gradient(135deg,#E8352E,#F26522);-webkit-background-clip:text;-webkit-text-fill-color:transparent">ViBlio</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="vb-toast" id="vbToast"></div>
+
+<script>
+// ══════════════════════════════════
+// CREDENCIALES DE USUARIO
+// ══════════════════════════════════
+const USERS = {
+  // Admin
+  'admin@viblio.com':    { pass:'ViBlio2026!',  name:'Administrador', role:'admin' },
+  // Empire credentials (same login)
+  'vm.rm26.pe@gmail.com':{ pass:'villamedic2026', name:'Alumno VM', role:'alumno' },
+  // Test accounts
+  'demo@villamedic.com': { pass:'demo2026',     name:'Demo Alumno', role:'alumno' },
+  'rambo@villamedic.com':{ pass:'rambo2026',    name:'Dr. Rambo',   role:'admin' },
+};
+
+// ══════════════════════════════════
+// STATE
+// ══════════════════════════════════
+const STORAGE_KEY = 'viblio_session';
+let currentUser = null;
+
+// ══════════════════════════════════
+// SPLASH → LOGIN or DASH
+// ══════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.getElementById('splashScreen').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('splashScreen').style.display = 'none';
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          currentUser = JSON.parse(saved);
+          showDash();
+        } catch(e) {
+          showLogin();
+        }
+      } else {
+        showLogin();
+      }
+    }, 600);
+  }, 2000);
+});
+
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'block';
+  document.getElementById('dashScreen').style.display = 'none';
+}
+
+function showDash() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashScreen').style.display = 'block';
+  if (currentUser) {
+    document.getElementById('dashAvatar').textContent = currentUser.name.charAt(0).toUpperCase();
+    document.getElementById('dashUserName').textContent = currentUser.name;
+  }
+}
+
+// ══════════════════════════════════
+// LOGIN
+// ══════════════════════════════════
+function handleLogin(e) {
+  e.preventDefault();
+  const user = document.getElementById('loginUser').value.trim().toLowerCase();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+
+  errEl.classList.remove('show');
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+
+  setTimeout(() => {
+    if (USERS[user] && USERS[user].pass === pass) {
+      currentUser = { email: user, name: USERS[user].name, role: USERS[user].role };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentUser));
+      showDash();
+      showToast('Bienvenido, ' + currentUser.name);
+    } else {
+      errEl.textContent = 'Usuario o contraseña incorrectos';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.textContent = 'ENTRAR';
+    }
+  }, 800);
+  return false;
+}
+
+function togglePassword() {
+  const inp = document.getElementById('loginPass');
+  const eye = document.getElementById('eyeIcon');
+  if (inp.type === 'password') {
+    inp.type = 'text';
+    eye.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
+  } else {
+    inp.type = 'password';
+    eye.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
+  }
+}
+
+// ══════════════════════════════════
+// DASHBOARD ACTIONS
+// ══════════════════════════════════
+function openWachitos() {
+  window.open('HojaDeRuta_ENAM2026.html', '_blank');
+}
+
+function doLogout() {
+  localStorage.removeItem(STORAGE_KEY);
+  currentUser = null;
+  showLogin();
+  showToast('Sesión cerrada');
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').classList.remove('show');
+  document.getElementById('loginBtn').disabled = false;
+  document.getElementById('loginBtn').textContent = 'ENTRAR';
+}
+
+// ══════════════════════════════════
+// TOAST
+// ══════════════════════════════════
+function showToast(msg) {
+  const t = document.getElementById('vbToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>
